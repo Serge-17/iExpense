@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+// Структура для хранения информации о расходах
 struct ExpenseItem: Identifiable, Codable {
     var id = UUID()
     let name: String
@@ -35,21 +36,20 @@ struct ContentView: View {
     @State private var showingAddExpense = false
     @State private var title = "iExpense"
     
-    @State private var selectedSortKeyString: KeyPath<ExpenseItem, String> = \ExpenseItem.name // Ключ сортировки по имени
-    @State private var selectedSortKeyDouble: KeyPath<ExpenseItem, Double> = \ExpenseItem.amount // Ключ сортировки по сумме
     @State private var isSortingByName = true // Флаг для определения типа сортировки
-    @State private var filterType: String = "Все" // Тип фильтрации
+    @State private var filterType: String = "All" // Тип фильтрации
 
+    // Используем @Query для фильтрации и сортировки расходов
     var filteredAndSortedItems: [ExpenseItem] {
         let filteredItems = expenses.items.filter { item in
-            filterType == "Все" || item.type == filterType
+            filterType == "All" || item.type == filterType
         }
         
         return filteredItems.sorted {
             if isSortingByName {
-                return $0[keyPath: selectedSortKeyString] < $1[keyPath: selectedSortKeyString]
+                return $0.name < $1.name // Сортировка по имени
             } else {
-                return $0[keyPath: selectedSortKeyDouble] < $1[keyPath: selectedSortKeyDouble]
+                return $0.amount < $1.amount // Сортировка по сумме
             }
         }
     }
@@ -73,23 +73,23 @@ struct ContentView: View {
                 }
                 .onDelete(perform: removeItems)
             }
-            .navigationTitle($title)
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
 
             .toolbar {
                 Menu("Sort") {
                     Button("Name") {
-                        isSortingByName = true
+                        isSortingByName = true // Установите флаг на сортировку по имени
                     }
                     Button("Amount") {
-                        isSortingByName = false
+                        isSortingByName = false // Установите флаг на сортировку по сумме
                     }
                 }
 
                 Menu("Filter") {
-                    Button("All") { filterType = "All" }
                     Button("Personal") { filterType = "Personal" }
                     Button("Business") { filterType = "Business" }
+                    Button("All") { filterType = "All" } // Добавлено для сброса фильтрации
                 }
 
                 Button("Добавить Расход", systemImage: "plus") {
